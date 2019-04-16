@@ -24,15 +24,14 @@ typedef struct StoreStruct {
   int customers_handled;
   int expected_customer_orders;
   pthread_mutex_t mutex;
-  pthread_cond_t can_add_orders, can_get_orders;
-
+  pthread_cond_t ready_to_checkout, can_check_out;
 } Exchange21;
 
 //Picks random clothing itme
 ClothingItem PickRandomClothingItem();
 
 //Open Store
-Exchange21* OpenStore(int max_size, int expected_num_orders);
+Exchange21* OpenStore(int max_size, int expected_customer_orders);
 
 //Close a Store
 void CloseStore(Exchange21* exch21);
