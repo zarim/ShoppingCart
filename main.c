@@ -24,8 +24,8 @@ void* Exchange21Customer(void* tid) {
   //for(int i = 0; i < ORDERS_PER_CUSTOMER; i++) {
 
     int customer_id = (int)(long) tid;
-    // randomly choose 1 of 3 options for as long
-    // can we change the Clothing struct to be called OrderStruct?
+    // randomly choose 1 of 3 options while in the forloop.
+
     //should we make another struct to called order to hold all the clothes
     //the customer may decide to buy? - it'll be another linked list.
     //that way when we check out, we can go through the orders of each customer which also
@@ -46,7 +46,7 @@ void* Exchange21Customer(void* tid) {
 
 //Thread function for Exchange21Cashier
 void* Exchange21Cashier(void* tid) {
-  
+
   return NULL;
 }
 
