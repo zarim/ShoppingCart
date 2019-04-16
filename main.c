@@ -26,8 +26,7 @@ void* Exchange21Customer(void* tid) {
     int customer_id = (int)(long) tid;
     // randomly choose 1 of 3 options while in the forloop.
 
-    //should we make another struct to called order to hold all the clothes
-    //the customer may decide to buy? - it'll be another linked list.
+    //should we make another struct called order to hold all the clothes the customer may decide to buy? - it'll be another linked list.
     //that way when we check out, we can go through the orders of each customer which also
     //have the clothes they decided to keep (another linked list, the clothes one we already have)
     //just an idea... some of variable names are a bit messsy/confusing at the moment.
