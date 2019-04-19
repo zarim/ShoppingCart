@@ -5,19 +5,22 @@
 #include <string.h>
 
 typedef char* ClothingItem;
-typedef char* ClothingSize;
-
 
 typedef struct ClothingStruct {
   ClothingItem clothing_item;
-  ClothingSize clothing_size;
-  int clothing_id;
   int quantity;
   struct ClothingStruct *next;
 } Clothing;
 
+typedef struct ReceiptStruct {
+    int clothes;
+    int customer_id;
+    int receipt_number;
+    struct ReceiptStruct *next;
+} Receipt;
+
 typedef struct StoreStruct {
-  Clothing* clothes;
+  Receipt* receipts;
   int current_size;
   int max_size;
   int next_customer_number;
@@ -30,6 +33,8 @@ typedef struct StoreStruct {
 //Picks random clothing itme
 ClothingItem PickRandomClothingItem();
 
+int ShoppingDecision();
+
 //Open Store
 Exchange21* OpenStore(int max_size, int expected_customer_orders);
 
@@ -37,7 +42,7 @@ Exchange21* OpenStore(int max_size, int expected_customer_orders);
 void CloseStore(Exchange21* exch21);
 
 //Adds Clothing Item
-int AddClothingItem(Exchange21* exch21, Clothing* clothes);
+void goToCheckout(Exchange21* exch21, Receipt* receipt);
 
 //Gets Clothing Item
 Clothing *GetClothingItem(Exchange21* exch21);

@@ -12,7 +12,7 @@
 //LengthList
 
 //Items
- ClothingItem Exchange21Selection[] = {
+ ClothingItem Exchange21Clothes[] = {
    "Maxi Dress",
    "Body Suit",
    "Graphic Tee",
@@ -26,38 +26,25 @@
    "Culotte"
  };
 
- //Sizes
-ClothingSize Exchange21Sizes[] = {
-  "XS",
-  "S",
-  "M",
-  "L",
-  "XL",
-};
-
 int ExchangeSelectionLength = 11;
 
 ClothingItem PickRandomClothingItem() {
   int item = rand() % ExchangeSelectionLength;
-  return Exchange21Selection[item];
+  return Exchange21Clothes[item];
+}
+
+int ShoppingDecision() {
+  int decision = rand() % 3;
+  return decision;
 }
 
 Exchange21* OpenStore(int max_size, int expected_customer_orders) {
   Exchange21 * myStore = malloc(sizeof(Exchange21));
-
-  myStore->clothes = NULL; // <----- this needs to different. we need to
-  //randomly generate the clothes along with the sizes.
-
+  myStore->receipts = NULL;
   myStore->current_size = 0;
   myStore->max_size = 0;
   myStore->next_customer_number = 0;
   myStore->customers_handled = 0;
-
-  //should we add the #ofCustomers here too? we can use it to compare
-  //customers handled to #ofCustomers. If we do this, it'll need to be
-  //the third parameter in this function.
-  //if we add this, be sure to add it to the StoreStruct.
-
   myStore->expected_customer_orders = expected_customer_orders;
 
   /* Synchronization objects */
@@ -87,21 +74,8 @@ void CloseStore(Exchange21* exch21) {
   printf("Exchange21 has been closed for the day!\n");
 }
 
-//using McGoogles as our template, the next function would be addOrder,
-//but we need to consider how ours is gonna work cause the customer
-//has 3 random options:
-//1. Shop - [try on and keep] VS. [try on and leave]
-//2. Checkout (this should only be possible if they have at least one item in their cart (they kept one item...))
-//3. Upon checkingOut, the customer sends the signal "ready_to_checkout" to the cashier
-// after receiving this signal, the cashier updates the stock/clothing quantity that the customer bought and when finished
-//sends the "can_check_out" singal to the next customer...
-//i'm not sure if this'll ^^^ work exactly like that, but we'll see. sounds pretty dope.
-//3. Leave - walked in and walked out.
-
-
-////using McGoogles as our template, the next function would be getOrder,
-//i already explained some of this above, but this will be the cashier's function
-//we can call it "checkOutCustomer" or something.
-
+void goToCheckout(Exchange21* exch21, Receipt* receipt) {
+  
+}
 
 /* OPTIONAL HELPER FUNCTIONS */
