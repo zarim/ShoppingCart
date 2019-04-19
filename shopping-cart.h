@@ -45,4 +45,4 @@ void CloseStore(Exchange21* exch21);
 void goToCheckout(Exchange21* exch21, Receipt* receipt);
 
 //Gets Clothing Item
-Clothing *GetClothingItem(Exchange21* exch21);
+Receipt *checkOutCustomer(Exchange21* exch21);
