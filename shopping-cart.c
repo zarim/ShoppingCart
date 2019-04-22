@@ -47,7 +47,7 @@ Exchange21* OpenStore(int currentStock, int potential_orders, int num_customers,
 }
 
 void CloseStore(Exchange21* exch21) {
-  if(exch21->receipts != NULL && exch21->customers_handled == exch21->customers) {
+  if(exch21->receipts != NULL && exch21->customers_handled != exch21->customers) {
     printList(exch21);
     printf("You can't close the store with customers in line!\n");
     return;
@@ -72,9 +72,8 @@ void goToCheckout(Exchange21* exch21, Receipt* receipt) {
   if(receipt->clothes > 0)
     printf("Customer #[%d] is in line with [%d] item(s).\n", receipt->customer_id, receipt->clothes);
 
-  // printList(exch21);
-
   AddReceiptToBack(&exch21->receipts, receipt);
+  exch21->customers_handled++;
   exch21->current_size++;
   pthread_cond_signal(&exch21->can_check_out); //signal to cashier that there is someone in line
   pthread_mutex_unlock(&exch21->mutex);
@@ -91,7 +90,7 @@ Receipt * checkOutCustomer(Exchange21 * exch21) {
     }
       pthread_cond_wait(&exch21->can_check_out, &exch21->mutex);
   }
-  
+
   // assert(!IsEmpty(exch21));
   // printList(exch21);
 

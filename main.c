@@ -9,7 +9,7 @@
 #define EXCHANGE21_SIZE 100
 #define STOCK 35
 #define NUM_CUSTOMERS 10
-#define NUM_CASHIERS 1
+#define NUM_CASHIERS 3
 #define ENTRIES_PER_CUSTOMER 5
 #define POTENTIAL_ORDERS NUM_CUSTOMERS * ENTRIES_PER_CUSTOMER
 
@@ -39,15 +39,8 @@ void* Exchange21Customer(void* tid) {
           break;
 
         case 1: //see cashier
-          if(myReceipt->clothes == 0) {
-            exch21->customers_handled++;
-            goToCheckout(exch21, myReceipt);
-            return NULL;
-          } else {
-            exch21->customers_handled++;
-            goToCheckout(exch21, myReceipt);
-            return NULL;
-          }
+          goToCheckout(exch21, myReceipt);
+          return NULL;
           break;
       }
   }
@@ -63,6 +56,7 @@ void* Exchange21Cashier(void* tid) {
         printf("Checking out Customer #[%d] with their [%d] items.\n", receipt->customer_id, receipt->clothes);
       else
         printf("Customer #[%d] only needed assistance, they're gone now.\n", receipt->customer_id);
+
       free(receipt);
       receipt = checkOutCustomer(exch21);
     }
