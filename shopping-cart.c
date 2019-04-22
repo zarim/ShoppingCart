@@ -5,46 +5,28 @@
 #include <time.h>
 
 /* helper function prototypes */
-bool isEmpty(Exchange21 * exch21);
+bool IsEmpty(Exchange21 * exch21);
 void printList(Exchange21 * exch21);
-bool isFull(Exchange21 * exch21);
+bool IsFull(Exchange21 * exch21);
 void AddReceiptToBack(Receipt** receipts, Receipt* receipt);
 int lengthList(Exchange21 * exch21);
-
-//Items
- ClothingItem Exchange21Clothes[] = {
-   "Maxi Dress",
-   "Body Suit",
-   "Graphic Tee",
-   "Crop-Top",
-   "High-Rise Leggings",
-   "Biker Shorts",
-   "Mini-Skirt",
-   "Denim Shorts",
-   "Romper",
-   "Jump-Suit",
-   "Culotte"
- };
-
-int ExchangeSelectionLength = 11;
-
-ClothingItem PickRandomClothingItem() {
-  int item = rand() % ExchangeSelectionLength;
-  return Exchange21Clothes[item];
-}
+void kickOut(Exchange21 * exch21);
 
 int ShoppingDecision() {
   int decision = rand() % 2;
   return decision;
 }
 
-Exchange21* OpenStore(int max_size, int expected_customer_orders) {
+Exchange21* OpenStore(int currentStock, int potential_orders, int num_customers, int max) {
   Exchange21 * myStore = malloc(sizeof(Exchange21));
   myStore->receipts = NULL;
-  myStore->current_size = 0;
-  myStore->max_size = max_size;
+  myStore->openingStock = currentStock;
+  myStore->closingStock = currentStock;
   myStore->customers_handled = 0;
-  myStore->expected_customer_orders = expected_customer_orders;
+  myStore->customers = num_customers;
+  myStore->potential_orders = potential_orders;
+  myStore->current_size = 0;
+  myStore->max_size = max;
 
   /* Synchronization objects */
   if(pthread_mutex_init(&myStore->mutex, NULL) != 0) {
@@ -60,72 +42,73 @@ Exchange21* OpenStore(int max_size, int expected_customer_orders) {
     return NULL;
   }
 
-  printf("Exchange21 is open for business!\n");
+  printf("Exchange21 has opened with a stock of [%d] items!\n", myStore->openingStock);
   return myStore;
 }
 
 void CloseStore(Exchange21* exch21) {
-  if(exch21->customers_handled < exch21->expected_customer_orders) {
+  if(exch21->receipts != NULL && exch21->customers_handled == exch21->customers) {
+    printList(exch21);
+    printf("You can't close the store with customers in line!\n");
+    return;
   }
-
+  printf("Exchange21 opened with a stock of [%d] and is closing with a stock of [%d]\n", exch21->openingStock, exch21->closingStock);
   pthread_mutex_destroy(&exch21->mutex);
   pthread_cond_destroy(&exch21->can_check_out);
   pthread_cond_destroy(&exch21->ready_to_checkout);
   free(exch21);
-  printf("Exchange21 has been closed for the day!\n");
+  return;
 }
 
 void goToCheckout(Exchange21* exch21, Receipt* receipt) {
   pthread_mutex_lock(&exch21->mutex);
 
-  // printf("current: %d max: %d\n", exch21->current_size, exch21->max_size);
-  while(isFull(exch21)) {
-    pthread_cond_wait(&exch21->can_check_out, &exch21->mutex);
+
+  while(IsFull(exch21)) {
+    pthread_cond_wait(&exch21->ready_to_checkout, &exch21->mutex);
   }
+
+  //if customer has clothes in their cart consider them handled.
+  if(receipt->clothes > 0)
+    printf("Customer #[%d] is in line with [%d] item(s).\n", receipt->customer_id, receipt->clothes);
+
+  // printList(exch21);
 
   AddReceiptToBack(&exch21->receipts, receipt);
   exch21->current_size++;
-  pthread_cond_signal(&exch21->ready_to_checkout); //signal to cashier that there is someone in line
+  pthread_cond_signal(&exch21->can_check_out); //signal to cashier that there is someone in line
   pthread_mutex_unlock(&exch21->mutex);
 }
 
 Receipt * checkOutCustomer(Exchange21 * exch21) {
   pthread_mutex_lock(&exch21->mutex);
 
-  while(isEmpty(exch21)) {
-
-    if(exch21->customers_handled <= exch21->expected_customer_orders) {
-      printf("customers_handled: %d expected_customers: %d\n", exch21->customers_handled, exch21->expected_customer_orders);
+  while(IsEmpty(exch21)) {
+    if(exch21->customers_handled == exch21->customers) {
       pthread_cond_broadcast(&exch21->can_check_out);
       pthread_mutex_unlock(&exch21->mutex);
       return NULL;
     }
-    pthread_cond_wait(&exch21->can_check_out, &exch21->mutex);
+      pthread_cond_wait(&exch21->can_check_out, &exch21->mutex);
   }
-
-  Receipt * receipt = exch21->receipts;
-  exch21->receipts = receipt->next;
-
-  //if customer has clothes in their cart consider them handled.
-  if(receipt->clothes > 0)
-  exch21->customers_handled++;
-
-  exch21->current_size--;
-
+  
+  // assert(!IsEmpty(exch21));
   // printList(exch21);
-  pthread_cond_signal(&exch21->can_check_out); //signal that you can add order
+
+  Receipt* receipt = exch21->receipts;
+  exch21->receipts = receipt->next;
+  exch21->current_size--;
+  pthread_cond_signal(&exch21->ready_to_checkout); //signal that you can add order
   pthread_mutex_unlock(&exch21->mutex);
   return receipt;
 }
 
-/* OPTIONAL HELPER FUNCTIONS */
-
-bool isEmpty(Exchange21 * exch21) {
-  return(exch21->current_size == 0);
+bool IsEmpty(Exchange21* exch21) {
+    return (exch21->current_size == 0);
 }
 
-bool isFull(Exchange21 * exch21) {
-  return(exch21->current_size == exch21->max_size);
+bool IsFull(Exchange21* exch21) {
+    return (exch21->current_size == exch21->max_size);
 }
 
 void AddReceiptToBack(Receipt** receipts, Receipt* receipt) {
@@ -148,15 +131,14 @@ void printList(Exchange21 * exch21) {
         printf("Empty list!\n");
         return;
     }
-    printf("Receipt:\n");
-    printf("start--\n");
+    // printf("Receipt:\n");
+    printf("\nstart--\n");
     while(current != NULL) {
-        printf("[%d] - [%d]\n", current->receipt_number, current->clothes);
+        printf("Customer #[%d] - items: [%d]\n", current->customer_id, current->clothes);
         current = current->next;
     }
     printf("--finish\n");
     int length = lengthList(exch21);
-    printf("Length of list: [%d] ** orders complete:[%d] out of [%d] total\n", length, exch21->customers_handled, exch21->expected_customer_orders);
 }
 
 int lengthList(Exchange21* exch21) {

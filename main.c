@@ -5,28 +5,24 @@
 
 #include "shopping-cart.h"
 
-//we need to define whatever values we're going to put in the store...
-//the size,
-//customers
-//cashiers
-//orders_per_customer
-//expected_customer_orders = customers * orders per customer
-#define EXCHANGE21_SIZE 100
-#define NUM_CUSTOMERS 10
-#define NUM_CASHIERS 5
-#define ENTRIES_PER_CUSTOMER 5
-#define EXPECTED_NUM_ORDERS NUM_CUSTOMERS * ENTRIES_PER_CUSTOMER
 
-//OR ^^ IF WE WANT, we could make it to where the user can choose
-//all of these values in the main.
-//"Welcome to your store, how many customers do you want today?, "cashiers", etc. etc
+#define EXCHANGE21_SIZE 100
+#define STOCK 35
+#define NUM_CUSTOMERS 10
+#define NUM_CASHIERS 1
+#define ENTRIES_PER_CUSTOMER 5
+#define POTENTIAL_ORDERS NUM_CUSTOMERS * ENTRIES_PER_CUSTOMER
 
 Exchange21 * exch21;
 
 //Thread function for Exchange21Customer
 void* Exchange21Customer(void* tid) {
+
   Receipt * myReceipt = malloc(sizeof(Receipt));
+
+  //each customer has X attemps to find items they like in the store
   for(int i = 0; i < ENTRIES_PER_CUSTOMER; i++) {
+
       int customer_id = (int)(long) tid;
       myReceipt->customer_id = customer_id;
       int decision = ShoppingDecision();
@@ -36,17 +32,19 @@ void* Exchange21Customer(void* tid) {
         decision = 1;
 
       switch (decision) {
-        case 0: //add to cart/receipt
+        case 0: //add to cart
             myReceipt->clothes++;
-            printf("Customer[%d] found something they liked - they now have [%d] item(s) in their cart.\n", customer_id, myReceipt->clothes);
+            exch21->closingStock--;
+            printf("Customer #[%d] found something they liked - they now have [%d] item(s) in their cart.\n", customer_id, myReceipt->clothes);
           break;
 
         case 1: //see cashier
           if(myReceipt->clothes == 0) {
-            printf("Customer[%d] entered and left without shopping.\n", customer_id);
+            exch21->customers_handled++;
+            goToCheckout(exch21, myReceipt);
             return NULL;
           } else {
-            printf("Customer[%d] has [%d] items and is ready to check out.\n", customer_id, myReceipt->clothes);
+            exch21->customers_handled++;
             goToCheckout(exch21, myReceipt);
             return NULL;
           }
@@ -58,11 +56,13 @@ void* Exchange21Customer(void* tid) {
 
 //Thread function for Exchange21Cashier
 void* Exchange21Cashier(void* tid) {
-  int cashier_id = (int)(long) tid;
-
   Receipt * receipt = checkOutCustomer(exch21);
 
   while(receipt != NULL) {
+      if(receipt->clothes > 0)
+        printf("Checking out Customer #[%d] with their [%d] items.\n", receipt->customer_id, receipt->clothes);
+      else
+        printf("Customer #[%d] only needed assistance, they're gone now.\n", receipt->customer_id);
       free(receipt);
       receipt = checkOutCustomer(exch21);
     }
@@ -70,30 +70,28 @@ void* Exchange21Cashier(void* tid) {
   return NULL;
 }
 
-
 int main() {
     srand(time(0));
     pthread_t customers[NUM_CUSTOMERS]; //customer threads
     pthread_t cashiers[NUM_CASHIERS]; //cashier threads
-    exch21 = OpenStore(EXCHANGE21_SIZE, NUM_CUSTOMERS);
+    exch21 = OpenStore(STOCK, POTENTIAL_ORDERS, NUM_CUSTOMERS, EXCHANGE21_SIZE);
 
     //Create customer and cashier threads
-    for (int i = 1; i <= NUM_CUSTOMERS; i++) {
+    for (int i = 0; i < NUM_CUSTOMERS; i++) {
         pthread_create(&customers[i], NULL, Exchange21Customer, (void*)(long)i);
     }
-    for (int i = 1; i <= NUM_CASHIERS; i++) {
+    for (int i = 0; i < NUM_CASHIERS; i++) {
         pthread_create(&cashiers[i], NULL, Exchange21Cashier, (void*)(long)i);
     }
 
     //Wait for customers and cashiers
-    for (int i = 1; i <= NUM_CUSTOMERS; i++) {
+    for (int i = 0; i < NUM_CUSTOMERS; i++) {
         pthread_join(customers[i], NULL);
     }
-    for (int i = 1; i <= NUM_CASHIERS; i++) {
+    for (int i = 0; i < NUM_CASHIERS; i++) {
         pthread_join(cashiers[i], NULL);
+    }
 
     CloseStore(exch21);
-
     return 0;
-}
 }
