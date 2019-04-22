@@ -10,21 +10,19 @@ void printList(Exchange21 * exch21);
 bool IsFull(Exchange21 * exch21);
 void AddReceiptToBack(Receipt** receipts, Receipt* receipt);
 int lengthList(Exchange21 * exch21);
-void kickOut(Exchange21 * exch21);
 
 int ShoppingDecision() {
   int decision = rand() % 2;
   return decision;
 }
 
-Exchange21* OpenStore(int currentStock, int potential_orders, int num_customers, int max) {
+Exchange21* OpenStore(int currentStock, int num_customers, int max) {
   Exchange21 * myStore = malloc(sizeof(Exchange21));
   myStore->receipts = NULL;
   myStore->openingStock = currentStock;
   myStore->closingStock = currentStock;
   myStore->customers_handled = 0;
   myStore->customers = num_customers;
-  myStore->potential_orders = potential_orders;
   myStore->current_size = 0;
   myStore->max_size = max;
 

@@ -27,7 +27,7 @@ typedef struct StoreStruct {
 int ShoppingDecision();
 
 //Open Store
-Exchange21* OpenStore(int storeStock, int potential_orders, int num_customers, int max);
+Exchange21* OpenStore(int storeStock, int num_customers, int max);
 
 //Close a Store
 void CloseStore(Exchange21* exch21);

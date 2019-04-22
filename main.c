@@ -11,7 +11,6 @@
 #define NUM_CUSTOMERS 10
 #define NUM_CASHIERS 3
 #define ENTRIES_PER_CUSTOMER 5
-#define POTENTIAL_ORDERS NUM_CUSTOMERS * ENTRIES_PER_CUSTOMER
 
 Exchange21 * exch21;
 
@@ -68,7 +67,7 @@ int main() {
     srand(time(0));
     pthread_t customers[NUM_CUSTOMERS]; //customer threads
     pthread_t cashiers[NUM_CASHIERS]; //cashier threads
-    exch21 = OpenStore(STOCK, POTENTIAL_ORDERS, NUM_CUSTOMERS, EXCHANGE21_SIZE);
+    exch21 = OpenStore(STOCK, NUM_CUSTOMERS, EXCHANGE21_SIZE);
 
     //Create customer and cashier threads
     for (int i = 0; i < NUM_CUSTOMERS; i++) {
