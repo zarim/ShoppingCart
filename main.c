@@ -5,11 +5,10 @@
 
 #include "shopping-cart.h"
 
-
 #define EXCHANGE21_SIZE 100
-#define STOCK 35
-#define NUM_CUSTOMERS 1
-#define NUM_CASHIERS 1
+#define STOCK 300
+#define NUM_CUSTOMERS 200
+#define NUM_CASHIERS 40
 #define ENTRIES_PER_CUSTOMER 5
 
 Exchange21 * exch21;
@@ -32,9 +31,13 @@ void* Exchange21Customer(void* tid) {
 
       switch (decision) {
         case 0: //add to cart
-            myReceipt->clothes++;
-            exch21->closingStock--;
-            printf("Customer #[%d] found something they liked - they now have [%d] item(s) in their cart.\n", customer_id, myReceipt->clothes);
+            if(exch21->closingStock == 0) {
+              printf("Customer #[%d] came in for a certain item, but it's no longer on the shelf.\n", customer_id);
+            } else {
+              myReceipt->clothes++;
+              exch21->closingStock--;
+              printf("Customer #[%d] found something they liked - they now have [%d] item(s) in their cart.\n", customer_id, myReceipt->clothes);
+            }
           break;
 
         case 1: //see cashier
@@ -67,6 +70,20 @@ int main() {
     srand(time(0));
     pthread_t customers[NUM_CUSTOMERS]; //customer threads
     pthread_t cashiers[NUM_CASHIERS]; //cashier threads
+
+    if(NUM_CASHIERS == 0) {
+      printf("You must have and cashiers to open the store!\n");
+      return 0;
+    }
+    if(NUM_CUSTOMERS == 0) {
+      printf("No one came to shop today!\n");
+      return 0;
+    }
+    if(STOCK == 0) {
+      printf("You can't open a store with no items on the shelf!\n");
+      return 0;
+    }
+
     exch21 = OpenStore(STOCK, NUM_CUSTOMERS, EXCHANGE21_SIZE);
 
     //Create customer and cashier threads
