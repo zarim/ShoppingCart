@@ -8,8 +8,8 @@
 
 #define EXCHANGE21_SIZE 100
 #define STOCK 35
-#define NUM_CUSTOMERS 10
-#define NUM_CASHIERS 3
+#define NUM_CUSTOMERS 1
+#define NUM_CASHIERS 1
 #define ENTRIES_PER_CUSTOMER 5
 
 Exchange21 * exch21;
